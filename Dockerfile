@@ -29,16 +29,16 @@ RUN apt-get update && \
   libpangocairo-1.0-0 \
   libgtk-3-0 \
   libxcomposite1
-COPY --chown=gradle:gradle . /home/gradle/faust-gen
+COPY --chown=gradle:gradle workflow/ /home/gradle/faust-gen
 COPY --chown=gradle:gradle init.gradle.kts /home/gradle/.gradle/init.gradle.kts
 
 WORKDIR /home/gradle/faust-gen
 USER gradle
 # ARG CACHEBUST=0
 RUN gradle ${GRADLE_TASKS} --no-daemon --continue
-VOLUME ["/home/gradle/faust-gen/build"]
+
 
 FROM php:8-apache AS www
 LABEL stage=www
-RUN a2enmod rewrite
 COPY --from=build /home/gradle/faust-gen/build/www /var/www/html
+RUN a2enmod rewrite
