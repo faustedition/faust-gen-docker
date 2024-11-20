@@ -1,0 +1,10 @@
+name: faustedition
+
+services:
+  web:
+    image: faustedition/www:latest
+    expose:
+      - 80
+    build:
+      context: .
+      target: www
