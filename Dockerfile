@@ -43,4 +43,5 @@ LABEL stage=www
 COPY --from=build /home/gradle/faust-gen/build/www /var/www/html
 COPY apache.conf /etc/apache2/conf-available/faust.conf
 RUN a2enmod rewrite negotiation && \
+  a2enconf faust && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
