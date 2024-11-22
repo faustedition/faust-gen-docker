@@ -45,3 +45,11 @@ COPY apache.conf /etc/apache2/conf-available/faust.conf
 RUN a2enmod rewrite negotiation && \
   a2enconf faust && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+
+FROM stadlerpeter/existdb:latest AS exist
+ENV EXIST_ENV=production
+ENV EXIST_DEFAULT_APP_PATH=xmldb:exist:///db/apps/faust-dev
+USER wegajetty
+ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar ${EXIST_HOME}/autodeploy/
+COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
