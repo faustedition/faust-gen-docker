@@ -64,3 +64,24 @@ ENV EXIST_DEFAULT_APP_PATH=xmldb:exist:///db/apps/faust-dev
 USER wegajetty
 ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar ${EXIST_HOME}/autodeploy/
 COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
+
+
+####################################### Macrogenesis server ########################################
+FROM debian:bookworm AS macrogen-build
+COPY --from=build /home/gradle/faust-gen/macrogen /tmp/macrogen
+
+RUN <<EOF
+apt-get update
+  
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 python3-venv python3-pip python3-wheel python3-dev libgraphviz-dev build-essential
+mkdir -p /opt/graphviewer
+cd /opt/graphviewer
+python3 -m venv venv
+. venv/bin/activate
+pip install --no-cache-dir --prefer-binary '/tmp/macrogen[fastapi]'
+EOF
+
+
+FROM alpine:latest AS macrogen
+RUN apk add --no-cache graphviz python3
+COPY --from=macrogen-build /opt/graphviewer /opt/graphviewer
