@@ -1,5 +1,11 @@
 # syntax=docker/dockerfile:1
 
+
+############################################### Release build ############################################
+#
+# The first image builds everything based on the git checkout of the individual projects. Following
+# stages copy contents from there.
+
 FROM gradle:7.5 AS build
 LABEL stage=builder
 ARG GRADLE_TASKS="build"
@@ -38,6 +44,10 @@ USER gradle
 RUN gradle ${GRADLE_TASKS} --no-daemon --continue
 
 
+###################################### Main web frontend ##########################################
+#
+# Website and apache serving everything.
+
 FROM php:8-apache AS www
 LABEL stage=www
 COPY --from=build /home/gradle/faust-gen/build/www /var/www/html
@@ -46,6 +56,7 @@ RUN a2enmod rewrite negotiation && \
   a2enconf faust && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
+###################################### eXist db ####################################################
 
 FROM stadlerpeter/existdb:latest AS exist
 ENV EXIST_ENV=production
