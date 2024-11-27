@@ -8,7 +8,8 @@
 
 FROM gradle:7.5 AS build
 LABEL stage=builder
-ARG GRADLE_TASKS="build"
+# ARG GRADLE_TASKS="build"
+ARG GRADLE_TASKS='-PmacrogenOptions=--render-timeout=60 build'
 
 # All following dependencies are required for chromium which renders the SVGs:
 RUN apt-get update && \
@@ -72,16 +73,21 @@ COPY --from=build /home/gradle/faust-gen/macrogen /tmp/macrogen
 
 RUN <<EOF
 apt-get update
-  
 DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 python3-venv python3-pip python3-wheel python3-dev libgraphviz-dev build-essential
-mkdir -p /opt/graphviewer
-cd /opt/graphviewer
-python3 -m venv venv
-. venv/bin/activate
+mkdir -p /opt/macrogen
+cd /opt/macrogen
+python3 -m venv graphviewer
+. ./graphviewer/bin/activate
 pip install --no-cache-dir --prefer-binary '/tmp/macrogen[fastapi]'
 EOF
 
 
-FROM alpine:latest AS macrogen
-RUN apk add --no-cache graphviz python3
-COPY --from=macrogen-build /opt/graphviewer /opt/graphviewer
+FROM alpine:3.19 AS macrogen
+RUN apk add --no-cache graphviz python3 && \
+  adduser -h /opt/macrogen -S -D macrogen
+COPY macrogen /opt/macrogen
+COPY --from=build /home/gradle/faust-gen/build/www/macrogenesis/macrogen-info.zip /opt/macrogen/
+COPY --from=macrogen-build /opt/macrogen/graphviewer /opt/macrogen/graphviewer
+USER macrogen
+WORKDIR /opt/macrogen
+ENTRYPOINT [ "/opt/macrogen/entrypoint.sh" ]
