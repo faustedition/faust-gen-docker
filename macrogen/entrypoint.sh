@@ -1,5 +1,8 @@
 #!/bin/sh
 
+ls -la
+
+export DEFAULT_MODEL=macrogen-info.zip
 . ./graphviewer/bin/activate
-. .env
-gunicorn graphviewer.gvfa:app
+env
+/opt/macrogen/graphviewer/bin/gunicorn "$@"

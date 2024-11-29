@@ -4,7 +4,9 @@ version: 1
 
 formatters:
   detailed:
-    format: "%(asctime)s:%(levelname)-8s:%(name)-8s:%(message)s"
+    format: "[%(asctime)s] [%(process)s] [%(levelname)s] [%(name)s] %(message)s"
+    datefmt: "%F %T %z"
+    # [2024-11-29 12:07:43 +0100] [1017589] [INFO] Booting worker with pid: 1017589
 
 handlers:
   stdout:

@@ -68,26 +68,36 @@ COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust
 
 
 ####################################### Macrogenesis server ########################################
-FROM debian:bookworm AS macrogen-build
+FROM python:3.11-slim AS macrogen-build
 COPY --from=build /home/gradle/faust-gen/macrogen /tmp/macrogen
 
 RUN <<EOF
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 python3-venv python3-pip python3-wheel python3-dev libgraphviz-dev build-essential
+/usr/bin/env
+/usr/bin/apt-get update
+env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 python3-venv python3-pip python3-wheel python3-dev libgraphviz-dev build-essential
 mkdir -p /opt/macrogen
 cd /opt/macrogen
 python3 -m venv graphviewer
 . ./graphviewer/bin/activate
-pip install --no-cache-dir --prefer-binary '/tmp/macrogen[fastapi]'
+pip install --no-cache-dir --prefer-binary '/tmp/macrogen[production]'
 EOF
 
 
-FROM alpine:3.19 AS macrogen
-RUN apk add --no-cache graphviz python3 && \
-  adduser -h /opt/macrogen -S -D macrogen
+# FROM alpine:3.19 AS macrogen
+FROM python:3.11-slim AS macrogen
+RUN adduser --system --home /opt/macrogen macrogen
+# RUN apk add --no-cache graphviz python3 && \
+# RUN   adduser -h /opt/macrogen -S -D macrogen
 COPY macrogen /opt/macrogen
 COPY --from=build /home/gradle/faust-gen/build/www/macrogenesis/macrogen-info.zip /opt/macrogen/
+COPY --from=build /home/gradle/faust-gen/src/main/xproc/xslt/bibliography.xml /opt/macrogen/
 COPY --from=macrogen-build /opt/macrogen/graphviewer /opt/macrogen/graphviewer
+
+RUN <<EOF
+apt-get update
+env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends graphviz
+EOF
+
 USER macrogen
 WORKDIR /opt/macrogen
-ENTRYPOINT [ "/opt/macrogen/entrypoint.sh" ]
+CMD [ "/opt/macrogen/entrypoint.sh" ]
