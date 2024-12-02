@@ -15,3 +15,10 @@ services:
     build:
       context: .
       target: exist
+  macrogen:
+    image: faustedition/macrogen:latest
+    expose:
+      - 5001
+    build:
+      context: .
+      target: macrogen
