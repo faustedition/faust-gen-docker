@@ -59,12 +59,15 @@ RUN a2enmod rewrite negotiation && \
 
 ###################################### eXist db ####################################################
 
-FROM stadlerpeter/existdb:latest AS exist
-ENV EXIST_ENV=production
-ENV EXIST_DEFAULT_APP_PATH=xmldb:exist:///db/apps/faust-dev
-USER wegajetty
-ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar ${EXIST_HOME}/autodeploy/
-COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
+FROM existdb/existdb:latest AS exist
+# ARG VERSION=6.2
+# ENV EXIST_ENV=production
+# ENV EXIST_DEFAULT_APP_PATH=xmldb:exist:///db/apps/faust-dev
+# USER wegajetty
+# ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar ${EXIST_HOME}/autodeploy/
+# COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
+ADD http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar /exist/autodeploy/
+COPY --from=build /home/gradle/faust-gen/build/faust-dev.xar /exist/autodeploy/
 
 
 ####################################### Macrogenesis server ########################################
