@@ -8,6 +8,9 @@ services:
     links:
       - exist
       - macrogen
+      - downloads
+    volumes:
+      - facsimile:/facsimile
     build:
       context: .
       target: www
@@ -25,3 +28,20 @@ services:
     build:
       context: .
       target: macrogen
+  downloads:
+    image: faustedition/downloads:latest
+    expose:
+      - 5051
+    volumes:
+      - facsimile:/facsimile
+    build:
+      context: .
+      target: downloadserver
+
+volumes:
+  facsimile:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/data/faust/facsimiles/transcript/facsimile
+      o: bind

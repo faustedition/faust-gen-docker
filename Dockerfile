@@ -53,9 +53,10 @@ FROM php:8-apache AS www
 LABEL stage=www
 COPY --from=build /home/gradle/faust-gen/build/www /var/www/html
 COPY apache.conf /etc/apache2/conf-available/faust.conf
-RUN a2enmod rewrite negotiation proxy_http && \
+RUN a2enmod rewrite negotiation proxy_http alias && \
   a2enconf faust && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+VOLUME /facsimile
 
 ###################################### eXist db ####################################################
 
@@ -73,6 +74,7 @@ COPY --from=build /home/gradle/faust-gen/build/faust-dev.xar /exist/autodeploy/
 ####################################### Macrogenesis server ########################################
 FROM python:3.11-slim AS macrogen-build
 COPY --from=build /home/gradle/faust-gen/macrogen /tmp/macrogen
+COPY download-server /tmp/download-server
 
 RUN <<EOF
 /usr/bin/env
@@ -83,8 +85,16 @@ cd /opt/macrogen
 python3 -m venv graphviewer
 . ./graphviewer/bin/activate
 pip install --no-cache-dir --prefer-binary '/tmp/macrogen[production]'
+deactivate
+
+mkdir -p /opt/downloads 
+cd /opt/downloads
+python3 -m venv downloadserver
+. ./downloadserver/bin/activate 
+pip install --no-cache-dir --prefer-binary '/tmp/download-server[production]'
 EOF
 
+## The actual server image
 
 # FROM alpine:3.19 AS macrogen
 FROM python:3.11-slim AS macrogen
@@ -104,3 +114,15 @@ EOF
 USER macrogen
 WORKDIR /opt/macrogen
 CMD [ "/opt/macrogen/entrypoint.sh" ]
+
+################ facsimile download server #######################
+
+FROM python:3.11-slim AS downloadserver
+RUN adduser --system --home /opt/downloads downloads
+COPY downloadserver /opt/downloads
+COPY --from=macrogen-build /opt/downloads/downloadserver /opt/downloads/downloadserver
+
+VOLUME /facsimile
+USER downloads
+WORKDIR /opt/downloads
+CMD [ "/opt/downloads/entrypoint.sh" ]

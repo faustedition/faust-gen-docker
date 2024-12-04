@@ -1,3 +1,6 @@
 [submodule "workflow"]
 	path = workflow
 	url = https://github.com/faustedition/faust-gen
+[submodule "download-server"]
+	path = download-server
+	url = https://github.com/faustedition/faust-download-server
