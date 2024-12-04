@@ -53,7 +53,7 @@ FROM php:8-apache AS www
 LABEL stage=www
 COPY --from=build /home/gradle/faust-gen/build/www /var/www/html
 COPY apache.conf /etc/apache2/conf-available/faust.conf
-RUN a2enmod rewrite negotiation && \
+RUN a2enmod rewrite negotiation proxy_http && \
   a2enconf faust && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 

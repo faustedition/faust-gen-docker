@@ -5,6 +5,9 @@ services:
     image: faustedition/www:latest
     expose:
       - 80
+    links:
+      - exist
+      - macrogen
     build:
       context: .
       target: www
