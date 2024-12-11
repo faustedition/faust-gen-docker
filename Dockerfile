@@ -58,6 +58,16 @@ RUN a2enmod rewrite negotiation proxy_http alias && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 VOLUME /facsimile
 
+#################################### Previous version of the website ################################
+FROM php:8-apache AS www-old
+ARG WWW
+COPY $WWW /var/www/html
+COPY apache.conf /etc/apache2/conf-available/faust.conf
+RUN a2enmod rewrite negotiation proxy_http alias && \
+  a2enconf faust && \
+  mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+VOLUME /facsimile
+
 ###################################### eXist db ####################################################
 
 FROM existdb/existdb:latest AS exist
