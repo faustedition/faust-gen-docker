@@ -2,9 +2,9 @@ name: faustedition
 
 services:
   web:
-    image: faustedition/www:latest
+    image: thvitt/faustedition-www:latest
     ports:
-      - "8099:80"
+      - "9000:80"
     links:
       - exist
       - macrogen
@@ -15,21 +15,21 @@ services:
       context: .
       target: www
   exist:
-    image: faustedition/exist:latest
+    image: thvitt/faustedition-exist:latest
     expose:
       - 8080
     build:
       context: .
       target: exist
   macrogen:
-    image: faustedition/macrogen:latest
+    image: thvitt/faustedition-macrogen:latest
     expose:
       - 5001
     build:
       context: .
       target: macrogen
   downloads:
-    image: faustedition/downloads:latest
+    image: thvitt/faustedition-downloads:latest
     expose:
       - 5051
     volumes:
@@ -39,28 +39,28 @@ services:
       target: downloadserver
 
   v1.0:
-    image: faustedition/www:1.0rc
+    image: thvitt/faustedition-www:1.0rc
     ports:
       - "9010:80"
     volumes:
       - facsimile:/facsimile
 
   v1.1:
-    image: faustedition/www:1.1rc
+    image: thvitt/faustedition-www:1.1rc
     ports:
       - "9011:80"
     volumes:
       - facsimile:/facsimile
 
   v1.2:
-    image: faustedition/www:1.2rc
+    image: thvitt/faustedition-www:1.2rc
     ports:
       - "9012:80"
     volumes:
       - facsimile:/facsimile
 
   v1.3:
-    image: faustedition/www:1.3rc
+    image: thvitt/faustedition-www:1.3rc
     ports:
       - "9013:80"
     volumes:

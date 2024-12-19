@@ -11,7 +11,7 @@ FROM gradle:7.5 AS build
 LABEL stage=builder
 # ARG GRADLE_TASKS="build"
 ARG MACROGEN_RENDER_TIMEOUT=""
-ARG GRADLE_TASKS="-PmacrogenOptions=--render-timeout=$MACROGEN_RENDER_TIMEOUT build"
+ARG GRADLE_TASKS="-PmacrogenOptions=--render-timeout=$MACROGEN_RENDER_TIMEOUT --no-daemon --console plain build"
 
 # All following dependencies are required for chromium which renders the SVGs:
 RUN apt-get update && \
