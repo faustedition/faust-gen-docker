@@ -6,10 +6,12 @@
 # The first image builds everything based on the git checkout of the individual projects. Following
 # stages copy contents from there.
 
+
 FROM gradle:7.5 AS build
 LABEL stage=builder
 # ARG GRADLE_TASKS="build"
-ARG GRADLE_TASKS='-PmacrogenOptions=--render-timeout=60 build'
+ARG MACROGEN_RENDER_TIMEOUT=""
+ARG GRADLE_TASKS="-PmacrogenOptions=--render-timeout=$MACROGEN_RENDER_TIMEOUT build"
 
 # All following dependencies are required for chromium which renders the SVGs:
 RUN apt-get update && \
@@ -51,6 +53,11 @@ RUN gradle ${GRADLE_TASKS} --no-daemon --continue
 
 FROM php:8-apache AS www
 LABEL stage=www
+LABEL org.containers.image.authors="Thorsten Vitt <thorsten.vitt@uni-wuerzburg.de>, Faustedition <info@faustedition.net>"
+LABEL org.opencontainers.image.url="https://faustedition.net/"
+LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
+LABEL org.opencontainers.image.title="Faustedition Web-Frontend"
+
 COPY --from=build /home/gradle/faust-gen/build/www /var/www/html
 COPY apache.conf /etc/apache2/conf-available/faust.conf
 RUN a2enmod rewrite negotiation proxy_http alias && \
@@ -71,6 +78,10 @@ VOLUME /facsimile
 ###################################### eXist db ####################################################
 
 FROM existdb/existdb:latest AS exist
+LABEL org.containers.image.authors="Thorsten Vitt <thorsten.vitt@uni-wuerzburg.de>, Faustedition <info@faustedition.net>"
+LABEL org.opencontainers.image.url="https://faustedition.net/"
+LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
+LABEL org.opencontainers.image.title="Faustedition eXist Database"
 # ARG VERSION=6.2
 # ENV EXIST_ENV=production
 # ENV EXIST_DEFAULT_APP_PATH=xmldb:exist:///db/apps/faust-dev
@@ -83,6 +94,10 @@ COPY --from=build /home/gradle/faust-gen/build/faust-dev.xar /exist/autodeploy/
 
 ####################################### Macrogenesis server ########################################
 FROM python:3.11-slim AS macrogen-build
+LABEL org.containers.image.authors="Thorsten Vitt <thorsten.vitt@uni-wuerzburg.de>, Faustedition <info@faustedition.net>"
+LABEL org.opencontainers.image.url="https://faustedition.net/"
+LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
+LABEL org.opencontainers.image.title="Faustedition Macrogenesis Subgraph Service"
 COPY --from=build /home/gradle/faust-gen/macrogen /tmp/macrogen
 COPY download-server /tmp/download-server
 
@@ -128,6 +143,10 @@ CMD [ "/opt/macrogen/entrypoint.sh" ]
 ################ facsimile download server #######################
 
 FROM python:3.11-slim AS downloadserver
+LABEL org.containers.image.authors="Thorsten Vitt <thorsten.vitt@uni-wuerzburg.de>, Faustedition <info@faustedition.net>"
+LABEL org.opencontainers.image.url="https://faustedition.net/"
+LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
+LABEL org.opencontainers.image.title="Faustedition Facsimile Download Server"
 RUN adduser --system --home /opt/downloads downloads
 COPY downloadserver /opt/downloads
 COPY --from=macrogen-build /opt/downloads/downloadserver /opt/downloads/downloadserver
