@@ -64,6 +64,7 @@ RUN a2enmod rewrite negotiation proxy_http alias && \
   a2enconf faust && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 VOLUME /facsimile
+HEALTHCHECK CMD curl --fail http://localhost/ || exit 1
 
 #################################### Previous version of the website ################################
 FROM php:8-apache AS www-old
@@ -135,12 +136,13 @@ COPY --from=macrogen-build /opt/macrogen/graphviewer /opt/macrogen/graphviewer
 
 RUN <<EOF
 apt-get update
-env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends graphviz
+env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends graphviz curl
 EOF
 
 USER macrogen
 WORKDIR /opt/macrogen
 CMD [ "/opt/macrogen/entrypoint.sh" ]
+HEALTHCHECK CMD curl --fail http://localhost:5001/macrogenesis/subgraph\?nodes=2_H || exit 1
 
 ################ facsimile download server #######################
 
@@ -149,6 +151,9 @@ LABEL org.containers.image.authors="Thorsten Vitt <thorsten.vitt@uni-wuerzburg.d
 LABEL org.opencontainers.image.url="https://faustedition.net/"
 LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
 LABEL org.opencontainers.image.title="Faustedition Facsimile Download Server"
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends curl
 RUN adduser --system --home /opt/downloads downloads
 COPY downloadserver /opt/downloads
 COPY --from=macrogen-build /opt/downloads/downloadserver /opt/downloads/downloadserver
@@ -157,3 +162,4 @@ VOLUME /facsimile
 USER downloads
 WORKDIR /opt/downloads
 CMD [ "/opt/downloads/entrypoint.sh" ]
+HEALTHCHECK CMD curl --fail -o /dev/null http://localhost:9000/downloads/facsimiles/1_H.2.zip || exit 1
