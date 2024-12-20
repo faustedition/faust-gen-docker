@@ -99,6 +99,7 @@ LABEL org.opencontainers.image.url="https://faustedition.net/"
 LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
 LABEL org.opencontainers.image.title="Faustedition Macrogenesis Subgraph Service"
 COPY --from=build /home/gradle/faust-gen/macrogen /tmp/macrogen
+COPY macrogen /opt/macrogen
 COPY download-server /tmp/download-server
 
 RUN <<EOF
@@ -108,8 +109,9 @@ env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends py
 mkdir -p /opt/macrogen
 cd /opt/macrogen
 python3 -m venv graphviewer
+chmod 755 ./graphviewer/bin/activate
 . ./graphviewer/bin/activate
-pip install --no-cache-dir --prefer-binary '/tmp/macrogen[production]'
+pip install --no-cache-dir --prefer-binary -r requirements.txt
 deactivate
 
 mkdir -p /opt/downloads 

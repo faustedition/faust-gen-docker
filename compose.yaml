@@ -23,6 +23,9 @@ services:
       target: exist
   macrogen:
     image: thvitt/faustedition-macrogen:latest
+    environment:
+      GUNICORN_CMD_ARGS: "--log-level debug --capture-output"
+      DEFAULT_MODEL: "/opt/macrogen/macrogen-info.zip"
     expose:
       - 5001
     build:

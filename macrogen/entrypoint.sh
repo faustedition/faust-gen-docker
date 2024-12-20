@@ -1,5 +1,8 @@
 #!/bin/sh
 
+pwd
+env
+cd /opt/macrogen
 export DEFAULT_MODEL=macrogen-info.zip
-. ./graphviewer/bin/activate
+. /opt/macrogen/graphviewer/bin/activate
 /opt/macrogen/graphviewer/bin/gunicorn "$@"
