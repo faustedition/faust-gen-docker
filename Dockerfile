@@ -58,23 +58,26 @@ LABEL org.opencontainers.image.url="https://faustedition.net/"
 LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
 LABEL org.opencontainers.image.title="Faustedition Web-Frontend"
 
-COPY --from=build /home/gradle/faust-gen/build/www /var/www/html
+COPY --from=build --chown=root:root /home/gradle/faust-gen/build/www /var/www/html
 COPY apache.conf /etc/apache2/conf-available/faust.conf
 RUN a2enmod rewrite negotiation proxy_http alias && \
   a2enconf faust && \
-  mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+  mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+  chown root:root /var/www/html 
 VOLUME /facsimile
 HEALTHCHECK CMD curl --fail http://localhost/ || exit 1
 
 #################################### Previous version of the website ################################
 FROM php:8-apache AS www-old
 ARG WWW
-COPY $WWW /var/www/html
+COPY --chown=root:root $WWW /var/www/html
 COPY apache.conf /etc/apache2/conf-available/faust.conf
 RUN a2enmod rewrite negotiation proxy_http alias && \
   a2enconf faust && \
-  mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+  mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+  chown root:root /var/www/html 
 VOLUME /facsimile
+HEALTHCHECK CMD curl --fail http://localhost/ || exit 1
 
 ###################################### eXist db ####################################################
 
@@ -162,4 +165,4 @@ VOLUME /facsimile
 USER downloads
 WORKDIR /opt/downloads
 CMD [ "/opt/downloads/entrypoint.sh" ]
-HEALTHCHECK CMD curl --fail -o /dev/null http://localhost:9000/downloads/facsimiles/1_H.2.zip || exit 1
+HEALTHCHECK CMD curl --fail -o /dev/null http://localhost:5051/1_H.2.zip || exit 1
