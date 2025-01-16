@@ -92,6 +92,8 @@ USER wegajetty
 ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar ${EXIST_HOME}/autodeploy/
 COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
 COPY --chown=wegajesetty:wegajetty adjust-conf-files.xsl ${EXIST_HOME}/
+HEALTHCHECK --interval=120s --timeout=10s \
+  CMD curl -Lf 'http://localhost:8080/exist/apps/faust-dev/text?q=wiesenheu' || exit 1
 
 
 ####################################### Macrogenesis server ########################################
