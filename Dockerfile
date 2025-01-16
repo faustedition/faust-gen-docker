@@ -81,19 +81,19 @@ HEALTHCHECK CMD curl --fail http://localhost/ || exit 1
 
 ###################################### eXist db ####################################################
 
-FROM existdb/existdb:latest AS exist
+FROM stadlerpeter/existdb:latest AS exist
 LABEL org.containers.image.authors="Thorsten Vitt <thorsten.vitt@uni-wuerzburg.de>, Faustedition <info@faustedition.net>"
 LABEL org.opencontainers.image.url="https://faustedition.net/"
 LABEL org.opencontainers.image.source="https://github.com/faustedition/faust-gen-docker"
 LABEL org.opencontainers.image.title="Faustedition eXist Database"
-# ARG VERSION=6.2
-# ENV EXIST_ENV=production
-# ENV EXIST_DEFAULT_APP_PATH=xmldb:exist:///db/apps/faust-dev
-# USER wegajetty
-# ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar ${EXIST_HOME}/autodeploy/
-# COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
-ADD http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar /exist/autodeploy/
-COPY --from=build /home/gradle/faust-gen/build/faust-dev.xar /exist/autodeploy/
+ENV EXIST_ENV=production
+ENV EXIST_DEFAULT_APP_PATH=xmldb:exist:///db/apps/faust-dev
+USER wegajetty
+ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/public/shared-resources-0.9.1.xar ${EXIST_HOME}/autodeploy/
+COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
+COPY --chown=wegajesetty:wegajetty adjust-conf-files.xsl ${EXIST_HOME}/
+HEALTHCHECK --interval=120s --timeout=10s \
+  CMD curl -Lf 'http://localhost:8080/exist/apps/faust-dev/text?q=wiesenheu' || exit 1
 
 
 ####################################### Macrogenesis server ########################################
