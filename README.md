@@ -13,3 +13,5 @@ docker build --target=www-old --build-arg=WWW=old/1.0rc --tag=faustedition/www:1
 ```
 
 to produce a properly tagged image.
+
+Note there is currently an issue with gradle and the build process: Gradle might have trouble loading its native library when there are AppArmour restrictions on the _host_ machine. This is only relevant for the build, not for the final images.
