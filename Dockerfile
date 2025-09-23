@@ -43,13 +43,13 @@ COPY --chown=gradle:gradle init.gradle.kts /home/gradle/.gradle/init.gradle.kts
 
 WORKDIR /home/gradle/faust-gen
 USER gradle
-# ARG CACHEBUST=0
 RUN gradle ${GRADLE_TASKS} --no-daemon --continue
 
 
 ###################################### Main web frontend ##########################################
 #
 # Website and apache serving everything.
+ENV http_proxy= https_proxy=
 
 FROM php:8-apache AS www
 LABEL stage=www
@@ -65,7 +65,7 @@ RUN a2enmod rewrite negotiation proxy_http alias && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
   chown root:root /var/www/html 
 VOLUME /facsimile
-HEALTHCHECK CMD curl --fail http://localhost/ || exit 1
+HEALTHCHECK CMD curl --noproxy localhost --fail http://localhost/ || exit 1
 
 #################################### Previous version of the website ################################
 FROM php:8-apache AS www-old
@@ -77,7 +77,7 @@ RUN a2enmod rewrite negotiation proxy_http alias && \
   mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
   chown root:root /var/www/html 
 VOLUME /facsimile
-HEALTHCHECK CMD curl --fail http://localhost/ || exit 1
+HEALTHCHECK CMD curl --noproxy localhost --fail http://localhost/ || exit 1
 
 ###################################### eXist db ####################################################
 
@@ -93,7 +93,7 @@ ADD --chown=wegajetty:wegajetty http://exist-db.org/exist/apps/public-repo/publi
 COPY --from=build --chown=wegajetty:wegajetty /home/gradle/faust-gen/build/faust-dev.xar ${EXIST_HOME}/autodeploy/
 COPY --chown=wegajesetty:wegajetty adjust-conf-files.xsl ${EXIST_HOME}/
 HEALTHCHECK --interval=120s --timeout=10s \
-  CMD curl -Lf 'http://localhost:8080/exist/apps/faust-dev/text?q=wiesenheu' || exit 1
+  CMD curl --noproxy localhost -Lf 'http://localhost:8080/exist/apps/faust-dev/text?q=wiesenheu' || exit 1
 
 
 ####################################### Macrogenesis server ########################################
@@ -145,7 +145,7 @@ EOF
 USER macrogen
 WORKDIR /opt/macrogen
 CMD [ "/opt/macrogen/entrypoint.sh" ]
-HEALTHCHECK CMD curl --fail http://localhost:5001/macrogenesis/subgraph\?nodes=2_H || exit 1
+HEALTHCHECK CMD curl --noproxy localhost --fail http://localhost:5001/macrogenesis/subgraph\?nodes=2_H || exit 1
 
 ################ facsimile download server #######################
 
